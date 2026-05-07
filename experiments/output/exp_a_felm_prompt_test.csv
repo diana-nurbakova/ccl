@@ -1,0 +1,2 @@
+U,p_value,alternative,n_factual_prompts,n_interpretive_prompts,median_factual,median_interpretive,mean_factual,mean_interpretive,rank_biserial,kruskal_H,kruskal_p
+72797.5,7.784551320411054e-06,greater,378,333,0.0,0.0,0.283853550917043,0.15809004975671642,0.1566725455614344,20.001510082318596,4.536566388458687e-05

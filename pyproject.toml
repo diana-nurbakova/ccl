@@ -1,0 +1,35 @@
+[project]
+name = "ccl"
+version = "0.1.0"
+description = "Critical Claim Literacy (CCL) — retroactive validation experiments against public empirical datasets"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Diana Nurbakova" }]
+dependencies = [
+    "scipy>=1.10",
+    "statsmodels>=0.14",
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "seaborn>=0.13",
+    "httpx>=0.26",
+    "python-dotenv>=1.0",
+    "datasets>=2.14",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "notebook>=7.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["experiments"]
+
+[tool.pytest.ini_options]
+testpaths = ["experiments/tests"]

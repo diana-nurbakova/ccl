@@ -1,0 +1,2 @@
+method,n_observations,n_summaries,n_models,beta_factual,se,z,p_value,odds_ratio,or_ci_low,or_ci_high,sd_summary,sd_model
+"Binomial GLMM (variational Bayes), random intercepts for summary_id and model_name",3249,1824,9,1.6395991761494912,0.05181053795468481,31.646055819446197,0.0,5.153103611399584,4.655505611798304,5.703886762057218,0.3556641731170525,0.738534401696863
