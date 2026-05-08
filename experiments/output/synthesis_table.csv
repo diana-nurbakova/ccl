@@ -1,7 +1,7 @@
 CCL design choice,Experiment,Key finding,Effect size
-Claim-type annotation (pre-LLM),A (FRANK),Factual detection >> Interpretive,OR = 5.49
-Claim-type annotation (LLM era),A' (FELM),Error types differ by CCL category in ChatGPT,"chi2=43.9, p=0.0000; OR=1.87 (FACT vs INTERP)"
-No-self-merge principle,B,Passive AI use harms learning,b = -0.010 (p=0.837)
-Architectural enforcement,B,Structure > voluntary evaluation,d = 0.99 (turns)
+Claim-type annotation (pre-LLM),A (FRANK),Factual detection >> Interpretive (GLMM with summary + model random intercepts),"OR = 5.15 [95% CI 4.66, 5.70]"
+Claim-type annotation (LLM era),A' (FELM),Factual prompt-level error rate > Interpretive (prompt-level Mann-Whitney; segments not independent within prompt),"mean error rate 0.28 vs 0.16, U=72798, p=7.8e-06 (N=378+333 prompts)"
+No-self-merge principle (learning outcome),B,Per-session unassisted exam score (Part3Tot); paper reports b = -0.064 on student-level final exam,b = -0.010 (p=0.837)
+Architectural enforcement (conversation length),B,Hint-only AI produces longer conversations (LMM with class + student random intercepts),"beta(vanilla-aug) = -2.95 turns [95% CI -4.80, -1.09], p=0.0018, d_total=-0.27"
 Process reflection (Stage 3),C,Passivity increases across sessions,slope = +0.014***
-Sustained scaffolding (fading debate),D,Long-term engagement decay over months,slope = -0.00033
+Sustained scaffolding (fading debate),D,Long-term engagement decay over months,(pending data)

@@ -23,6 +23,12 @@ Five experiments test these predictions against public empirical datasets. Exper
 ### CCL Prediction
 Factual errors are more reliably detected than interpretive errors. This asymmetry justifies the CCL's claim-type annotation system (■ FACTUAL / ♦ SOURCE / ▲ INTERPRETIVE).
 
+### Hypotheses
+
+- **H₁ (primary)**: Among sentences flagged by at least one annotator, the probability of majority agreement (≥ 2 of 3 annotators agreeing on the flagged category) is higher for FACTUAL than for INTERPRETIVE flags. On the logit scale, β(FACTUAL) > 0 in a binomial GLMM with `summary_id` and `model_name` random intercepts.
+- **H₁ (secondary)**: Per-category Fleiss' κ for FACTUAL exceeds Fleiss' κ for INTERPRETIVE.
+- **H₀**: No difference in majority-agreement odds between categories (β(FACTUAL) = 0).
+
 ### Data Source
 **FRANK benchmark** (Pagnoni et al., NAACL 2021)  
 - URL: https://github.com/artidoro/frank  
@@ -44,11 +50,27 @@ Factual errors are more reliably detected than interpretive errors. This asymmet
 | NoE | No error | — |
 
 ### Experiment Design
-For each sentence and CCL category:
-- Compute per-annotator binary flag (does this annotator flag this category?)
-- **Majority agreement**: proportion of flagged sentences where ≥2/3 annotators agree
-- **Fleiss' κ**: inter-rater reliability treating each category as a binary judgment
-- **Fisher's exact test**: 2×2 table of (majority-agreed vs. not) × (FACTUAL vs. INTERPRETIVE), among flagged sentences only
+
+**Data preparation** (`experiments.exp_a_error_detection.analysis.build_sentence_category_matrix`).
+For each (sentence, CCL category) pair, derive three per-annotator binary flags via `classify_frank_errors`: annotator *r* flags category *c* iff at least one of their FRANK error codes maps to *c*. Each flagged sentence carries `summary_id = "{article_hash}_{model_name}"` so that within-summary dependence can be modelled.
+
+**Per-category descriptive statistics** (`compute_category_stats`).
+- *Prevalence*: fraction of sentences with `any_flagged = True` (≥ 1 annotator flagged the category).
+- *Majority agreement*: among flagged sentences, fraction where ≥ 2 of 3 annotators agreed.
+- *Fleiss' κ*: 3-rater binary inter-annotator reliability for each category, computed via `experiments.shared.stats_utils.fleiss_kappa`.
+
+**Descriptive 2 × 2 test** (`fisher_test_factual_vs_interpretive`).
+Fisher's exact test on the 2 × 2 table {majority-agreed, not} × {FACTUAL, INTERPRETIVE}, restricted to flagged sentences. Treats every flagged sentence as independent — *reported as descriptive only* because sentences are nested within summaries within models.
+
+**Inferential mixed-effects model** (`glmm_factual_vs_interpretive`).
+Bayesian binomial GLMM fit by variational Bayes (`statsmodels.genmod.bayes_mixed_glm.BinomialBayesMixedGLM`) on flagged FACTUAL/INTERPRETIVE sentences:
+```
+majority_agree ~ is_factual + (1 | summary_id) + (1 | model_name)
+```
+- The fixed effect `is_factual` (1 = FACTUAL, 0 = INTERPRETIVE) gives the log-odds difference.
+- Variance-component parameters are log-SDs; the function exponentiates them to report random-intercept SDs on the logit scale.
+- We report the posterior mean (β), posterior SD (SE), Wald-style 95 % CI (β ± 1.96 SE), and a two-sided z-test p-value.
+- Each summary belongs to exactly one model, so the design is nested; both random intercepts are still identifiable because summary IDs include the model name and 1 824 summaries × 9 models leaves substantial between-model variation to estimate.
 
 ### Results
 
@@ -99,7 +121,17 @@ Annotators agree on the presence of a factual error 68% of the time, versus 28% 
 
 Experiment A uses pre-LLM summarisation models (BART, PEGASUS, etc.). FELM tests whether the same claim-type asymmetry exists in **ChatGPT outputs**, directly addressing the concern that the FRANK result may not generalise to modern LLMs.
 
-FELM does not have multiple independent annotators per segment, so inter-annotator agreement cannot be computed. Instead three complementary analyses are run: (1) error rate by CCL category, (2) error type distribution, (3) segment length as a detection difficulty proxy.
+FELM does not have multiple independent annotators per segment, so inter-annotator agreement cannot be computed. Instead four complementary analyses are run: (1) descriptive error rates by CCL category, (2) prompt-level inferential test (the proper unit), (3) error-type distribution, (4) segment-length proxy.
+
+### Hypotheses
+
+- **H₁ (primary)**: At the prompt level, the per-prompt error-rate distribution for FACTUAL prompts is stochastically greater than for INTERPRETIVE prompts (one-sided Mann-Whitney U).
+- **H₁ (secondary)**: At the prompt level, per-prompt error rates differ across the three CCL categories (Kruskal-Wallis).
+- **H₀**: Per-prompt error-rate distributions are identical across CCL categories.
+
+### Why prompt-level rather than mixed-effects
+
+Each FELM prompt belongs to exactly one domain and therefore exactly one CCL category, so the predictor is **constant within prompt**. A mixed-effects model with prompt as random intercept would have the fixed effect of CCL category perfectly confounded with the grouping factor. The proper inferential unit is therefore the prompt: aggregate the 1–N segments of each prompt to a single error-rate observation, then compare across categories.
 
 ### Data Source
 
@@ -122,9 +154,21 @@ FELM does not have multiple independent annotators per segment, so inter-annotat
 
 ### Experiment Design
 
-1. **Analysis 1 — Error rate by CCL category**: chi-square test across FACTUAL / INTERPRETIVE / GAP; Fisher's exact for FACTUAL vs. INTERPRETIVE
-2. **Analysis 2 — Error type distribution**: cross-tabulate FELM error types (knowledge_error, reasoning_error, calculation_error, etc.) by CCL category; chi-square test for distributional difference
-3. **Analysis 3 — Segment length proxy**: if interpretive error segments are longer, the error signal is more diluted, supporting the detectability argument (Mann-Whitney U)
+**Analysis 1 — Segment-level error rates** (`compute_error_rates`, *descriptive only*).
+Group segments by domain (and by CCL category) and report `error_rate = n_errors / n_segments`. We also report a chi-square test on segment counts and a Fisher's exact OR for FACTUAL vs INTERPRETIVE — both are descriptive because segments within a response share the same prompt and generation context, so they are not independent.
+
+**Analysis 2 — Prompt-level inferential test** (`compute_prompt_level_error_rates`, `mannwhitney_factual_vs_interpretive_prompts`, `kruskal_across_ccl_prompts`).
+- For each of the 847 prompts, compute `error_rate_p = (n error segments in p) / (n segments in p)`.
+- Tag each prompt with its single CCL category (constant within prompt).
+- **Kruskal-Wallis** across the three CCL categories: tests H₀ that all three error-rate distributions are identical.
+- **One-sided Mann-Whitney U** with `alternative='greater'`: tests CCL's directional prediction that FACTUAL prompts have higher error rates than INTERPRETIVE prompts.
+- **Effect size**: rank-biserial r = 2U/(n₁n₂) − 1 ∈ [−1, 1], where positive r means FACTUAL ranks higher.
+
+**Analysis 3 — Error-type distribution** (`chi_square_error_types`).
+Cross-tabulate FELM error types (knowledge_error, reasoning_error, calculation_error, irrelevant_with_qst, fooled, …) by CCL category among error segments. Chi-square test for distributional difference. Reported descriptively because the `type` field is sparsely populated (many entries are None).
+
+**Analysis 4 — Segment-length proxy** (`compute_segment_lengths`).
+Hypothesis: if interpretive error segments are longer, the error signal is more diluted, providing a mechanistic explanation for lower detection rates. We compute word counts on error segments only and run a two-sided Mann-Whitney U on FACTUAL vs INTERPRETIVE segment lengths.
 
 ### Results
 
@@ -189,14 +233,14 @@ Segment lengths do not differ significantly between FACTUAL and INTERPRETIVE err
 
 ### Interpretation
 
-**What FELM shows**: ChatGPT produces proportionally more factual errors (24.0%) than interpretive errors (14.5%), with OR = 1.87. Combined with FRANK, this creates a double asymmetry:
+**What FELM shows** (at the proper unit): ChatGPT prompts in the FACTUAL category have a higher mean per-prompt error rate (0.284) than INTERPRETIVE prompts (0.158), and the prompt-level distribution is shifted upward for FACTUAL (Mann-Whitney U = 72,798, p ≈ 7.8 × 10⁻⁶ one-sided; rank-biserial r ≈ 0.157). Combined with FRANK, this gives a double asymmetry:
 
-> - **LLMs make more factual errors** (FELM: OR = 1.87 in error production)
-> - **Humans detect factual errors more reliably** (FRANK: OR = 5.49 in detection agreement)
+> - **LLMs make more factual errors** — FELM: per-prompt mean error rate 0.284 (FACTUAL) vs 0.158 (INTERPRETIVE), Mann-Whitney p ≈ 8 × 10⁻⁶
+> - **Humans detect factual errors more reliably** — FRANK: GLMM odds ratio 5.15 [95 % CI 4.66, 5.70] for majority agreement on FACTUAL vs INTERPRETIVE flags, accounting for summary and model nesting
 
 Interpretive errors are *both* less frequently produced *and* harder for humans to catch when they do occur. This is precisely the scenario where CCL's differential scaffolding is most consequential: a low-frequency but high-stealth error class that passes unnoticed without explicit Stage 2–4 prompting.
 
-The error type distribution (χ² = 78.37, p < 0.0001) confirms that the categories produce qualitatively different errors, not just quantitatively different rates — supporting the CCL's decision to treat them as distinct annotation types rather than a single "error" category.
+The error-type distribution (χ² = 78.37, p < 0.0001 — descriptive, since errors are nested in prompts) confirms that the categories produce qualitatively different errors, not just quantitatively different rates — supporting the CCL's decision to treat them as distinct annotation types rather than a single "error" category.
 
 **Limitations**: FELM uses a single ground-truth annotation (no inter-annotator reliability measure). The `type` field is sparsely populated. The five FELM domains are broader than FRANK's seven error codes; the CCL mapping is coarser.
 
@@ -207,12 +251,19 @@ The error type distribution (χ² = 78.37, p < 0.0001) confirms that the categor
 ### CCL Prediction
 AI output that undergoes independent human evaluation (no-self-merge principle) produces better learning outcomes than passively accepted output. Structural enforcement is more effective than voluntary evaluation.
 
+### Hypotheses
+
+- **H₁ (architectural enforcement)**: After accounting for class- and student-level dependence, GPT Tutor produces conversations with more turns, shorter turns, higher evaluative-turn rate, higher active-turn rate, and lower passive-turn rate than GPT Base. Operationally, β(`is_vanilla`) in a per-metric LMM with `(1 | class_id) + (1 | student_id)` differs from 0 in the predicted direction.
+- **H₁ (learning outcome)**: GPT Base lowers unassisted exam score (Part3Tot) relative to control; GPT Tutor does not (Bastani's published finding).
+- **H₀ (architectural enforcement)**: β(`is_vanilla`) = 0 for every metric in the LMM.
+- **H₀ (learning outcome)**: GPT Base β = 0 in the cluster-robust ITT regression.
+
 ### Data Source
 **Bastani et al. (2025, PNAS)** — *"Generative AI Can Harm Learning"*  
 - URL: https://github.com/obastani/GenAICanHarmLearning  
 - Files:
-  - `main_regressions/final_data.csv` — student-session outcomes
-  - `text_analysis/data/raw/valid_student_data_w_time_stamp.csv` — conversation logs
+  - `main_regressions/final_data.csv` — student-session outcomes (`Student ID`, `Class`, `Treatment arm`, `Part3Tot`, …)
+  - `text_analysis/data/raw/valid_student_data_w_time_stamp.csv` — conversation logs (`username`, `conversation_id`, `session_id`, `treatment`, `role`, `message`, …)
 - ~**1,000 Turkish high school students**, 4 × 90-minute math tutoring sessions
 - Pre-registered RCT (3 arms: control, GPT Base, GPT Tutor)
 
@@ -226,18 +277,38 @@ AI output that undergoes independent human evaluation (no-self-merge principle) 
 
 ### Experiment Design
 
-**Turn classification**: Regex-based classifier applied to all 28,666 user turns:
-- **EVALUATIVE**: challenges to AI correctness ("are you sure", "that's wrong", "you are wrong")
-- **ACTIVE**: student working through the problem ("let me try", "step 1", "give me a hint")
-- **PASSIVE**: everything else (acknowledgements, short affirmations)
+**Step 1 — Turn classification** (`experiments.shared.turn_classifier`).
+Regex-based classifier applied to every user message:
+- **EVALUATIVE**: challenges to AI correctness ("are you sure", "that's wrong", "you are wrong"). Evaluated *before* ACTIVE so that "are you sure I should add 2x" counts as evaluative, not active.
+- **ACTIVE**: student working through the problem ("let me try", "step 1", "give me a hint", math operations on the student's side).
+- **PASSIVE**: everything else (acknowledgements, short affirmations, single-word replies).
 
-**Conversation metrics**: Aggregated per conversation — turns/conversation, mean words/turn, turn-type rates.
+**Step 2 — Conversation-level metrics** (`compute_conversation_level_metrics`).
+For each conversation (uniquely identified by `conversation_id` or `(username, problem_id)`):
+- `n_turns` — number of user turns
+- `mean_words_per_turn` — average word count over user turns
+- `evaluative_rate`, `active_rate`, `passive_rate` — fraction of user turns in each category
 
-**Condition comparison**: Cohen's d and Mann-Whitney U between GPT Base and GPT Tutor on each metric.
+**Step 3 — Descriptive condition comparison** (`compute_condition_comparison`, *descriptive only*).
+Cohen's d and Mann-Whitney U between `aug` and `vanilla` arms, treating each conversation as one observation. Reported as descriptive because each student contributes up to ~14 conversations and students are nested within classes.
 
-**Outcome regression**: OLS with cluster-robust standard errors (clustered at Class level), outcome = **Part3Tot** (unassisted exam score, 0–1 scale), predictors = GPTBase and GPTTutor binary indicators.
+**Step 4 — Inferential mixed-effects model** (`attach_class_id`, `conversation_level_lmm`).
+For each metric, fit:
+```
+metric ~ is_vanilla + (1 | class_id) + (1 | student_id)
+```
+via `statsmodels.formula.api.mixedlm` with `groups=class_id` and `vc_formula={"student": "0 + C(username)"}`. `is_vanilla` is a 0/1 indicator coded so that positive β means GPT Base > GPT Tutor on that metric.
+- We merge `Class` from `final_data.csv` onto the conversation-level metrics via `username = Student ID`.
+- We report β, robust SE, 95 % CI, p (Wald), and `d_total = β / √(var_class + var_student + var_residual)` as a variance-explained-scale standardised effect size.
+- REML fit (`reml=True`) with the L-BFGS-B optimiser; convergence is checked.
 
-> **Note on outcome variable**: Part3Tot is the unassisted exam score — the key CCL learning outcome. Part2Tot is the AI-assisted practice score and is intentionally excluded; it conflates tool use with learning.
+**Step 5 — Learning-outcome ITT regression** (`run_itt_regression`).
+OLS on `Part3Tot ~ GPTBase + GPTTutor` with cluster-robust SEs clustered at `Class`. Returns β / SE / p for each treatment arm.
+
+> **Note on outcome variable**: Part3Tot is the unassisted exam score — the key CCL learning outcome. Part2Tot is the AI-assisted practice score and is intentionally excluded; it conflates tool use with learning. The Bastani paper's headline regression uses a single standardised final exam (administered after all 4 sessions); the per-session Part3Tot in this data file is a closely related but not identical measure, which explains the divergence in β values.
+
+**Step 6 — Manual validation sample** (`sample_evaluative_turns`).
+Random sample of 15 turns the regex classifier labels EVALUATIVE, hand-checked for false positives.
 
 ### Results
 
@@ -317,14 +388,36 @@ All 15 sampled evaluative turns were genuine challenges to AI correctness. Domin
 ### CCL Prediction
 Without process-level reflection (Stage 3), critical engagement declines across sessions.
 
+### Hypotheses
+
+- **H₁ (passive rate)**: The mean per-student slope of `passive_rate` over sessions 1–4 is positive (passivity rises). One-sample t-test on slopes against 0.
+- **H₁ (active rate)**: The mean per-student slope of `active_rate` is negative.
+- **H₁ (evaluative rate)**: The mean per-student slope of `evaluative_rate` is negative *if scaffolding is sufficient*; the spec admits that for `vanilla` (no scaffold) a learning-curve effect may push evaluative rate up over sessions.
+- **H₀**: For each metric, the mean per-student slope = 0.
+
+### Why the per-student slope is the right unit
+
+Each student contributes 3–4 sessions, so session-level rows are not independent within student. Computing one OLS slope per student and then running a one-sample t-test on the resulting N = 451 slopes operates at the student level by construction — there is no nesting to model away.
+
 ### Data Source
 Same Bastani et al. dataset as Experiment B. Filtered to **451 students** with ≥3 of 4 sessions (243 `aug`, 208 `vanilla`).
 
 ### Experiment Design
-1. Aggregate turn-type metrics per student per session
-2. Compute per-student OLS slope for each metric over sessions 1–4
-3. One-sample t-test on slope distribution (H₀: mean slope = 0)
-4. Report % of students with negative slope
+
+**Step 1 — Per-(student, session) metrics** (`build_session_metrics`).
+Apply the regex turn classifier from Experiment B to user turns and aggregate per `(username, session_id)` into `n_turns`, `mean_words_per_turn`, `evaluative_rate`, `active_rate`, `passive_rate`.
+
+**Step 2 — Filter to longitudinal participants** (`filter_repeat_students`).
+Keep only students with ≥ 3 distinct `session_id` values so an OLS slope is well-defined.
+
+**Step 3 — Per-student trajectory slopes** (`per_subject_slopes`).
+For each student and each metric, fit a simple OLS slope of `metric ~ session_id` using the closed-form `cov(x,y) / var(x)`. Returns one scalar slope per (student, metric).
+
+**Step 4 — One-sample t-test on slopes per treatment arm** (`slope_ttest`, `compute_trajectory_slopes`).
+Within each treatment arm separately (`aug`, `vanilla`), test H₀: mean slope = 0 with `scipy.stats.ttest_1samp`. Report mean slope, % of students with negative slope, t-statistic, and p-value. We test arms separately rather than pooled because the spec predicts *direction* may differ between arms.
+
+**Step 5 — Session-level summary table** (`session_level_summary`).
+For visualisation only: mean of each metric grouped by `(treatment, session_id)`. Not a hypothesis test.
 
 ### Session-Level Summary
 
@@ -374,6 +467,19 @@ Same Bastani et al. dataset as Experiment B. Filtered to **451 students** with �
 ### CCL Prediction
 Engagement decay documented in Experiment C (4 sessions, days) extends to months-long timescales and is visible in unstructured real-world AI conversations.
 
+### Hypotheses
+
+- **H₁ (passive rate)**: The mean per-user slope of `passive_rate` over `conv_order` is positive.
+- **H₁ (active rate)**: The mean per-user slope of `active_rate` over `conv_order` is negative.
+- **H₁ (vocabulary concentration)**: The mean per-user slope of `vocab_concentration` (fraction of user words drawn from a top-50 global vocabulary) is positive — users converge on narrower topic ranges over time.
+- **H₁ (lexical diversity)**: The mean per-user slope of TTR (type-token ratio) is negative — repetition increases.
+- **H₁ (use-frequency vs calendar time)**: Decay is detectable both by conversation order and by `weeks_since_first`. Whichever has the larger effect indicates whether decay is use-driven or time-driven.
+- **H₀**: For each metric, the mean per-user slope = 0.
+
+### Why the per-user slope is the right unit
+
+Each user contributes multiple conversations, so conversation-level rows are not independent within user. As in Experiment C, we collapse to one slope per user and run a one-sample t-test on the N = 696 slopes — operating at the user level by construction.
+
 ### Data Source
 **WildChat-1M** (Zhao et al. / Allen AI)  
 - URL: https://huggingface.co/datasets/allenai/WildChat-1M  
@@ -382,17 +488,29 @@ Engagement decay documented in Experiment C (4 sessions, days) extends to months
 - User identifier: `hashed_ip` (anonymised IP hash)
 
 ### Experiment Design
-1. Filter to repeat users (≥5 conversations) to enable longitudinal tracking
-2. Order conversations chronologically per user; assign `conv_order` and `weeks_since_first`
-3. Apply turn classifier to user turns; compute per-conversation engagement metrics
-4. Per-user OLS slopes over `conv_order` and `weeks_since_first`
-5. **Topic drift**: track vocabulary concentration (fraction of user words in top-50 global vocabulary) as a proxy for narrowing topic range
-6. **Turn complexity**: type-token ratio (TTR) as lexical diversity measure
 
-### Additional Analysis Angles
-- **Decay by conversation order** vs. **decay by calendar time** (weeks) — tests whether decay is use-frequency-driven or time-driven
-- **Vocabulary concentration slope**: positive slope = users converge on a narrower topic range over time
-- **Lexical diversity (TTR) slope**: declining TTR = simpler, more repetitive language over time
+**Step 1 — Streamed sampling of repeat users** (`download_wildchat_sample`).
+Stream WildChat-1M via the Hugging Face `datasets` library, skipping toxic/redacted records. Group by `hashed_ip`; keep users with ≥ 5 conversations. Cap to 10,000 conversations total (random shuffle to trim if more qualify). Cache as parquet. The streaming approach avoids downloading the full ~5 M-conversation dataset.
+
+**Step 2 — Chronological ordering per user**.
+Sort conversations within each user by `timestamp`. Assign `conv_order` (1 = earliest) and `weeks_since_first = (timestamp − min_timestamp_per_user).days / 7`.
+
+**Step 3 — Per-conversation metrics**.
+Same regex turn classifier as Experiments B and C, plus:
+- `vocab_concentration`: fraction of the conversation's user-side word tokens that appear in a top-50 global vocabulary list (built from the full sample).
+- `mean_ttr`: mean type-token ratio across the user turns of the conversation, computed via `experiments.shared.stats_utils.type_token_ratio`.
+
+**Step 4 — Per-user OLS slopes** (`per_subject_slopes`).
+For each user and each metric, fit a slope of metric vs `conv_order` and a separate slope vs `weeks_since_first`. Use only users with ≥ 5 conversations and non-zero variance in the time variable.
+
+**Step 5 — One-sample t-tests on slopes** (`slope_ttest`).
+For each metric, run a one-sample t-test on the N ≈ 696 per-user slopes against 0. Report mean slope, % declining, t-statistic, p-value, separately for `conv_order` and `weeks_since_first`.
+
+**Outputs**:
+- `experiments/output/exp_d_decay_by_order.csv` — slope summaries vs conversation order
+- `experiments/output/exp_d_decay_by_weeks.csv` — slope summaries vs weeks since first conversation
+- `experiments/output/figures/exp_d_decay_trajectories.{png,pdf}` — mean trajectories per metric
+- `experiments/output/figures/exp_d_slope_distributions.{png,pdf}` — histograms of per-user slopes
 
 ### Results
 
@@ -419,13 +537,16 @@ The WildChat analysis tests whether the decay pattern found in Experiment C pers
 
 ## Cross-Experiment Synthesis
 
+This table is auto-generated by `experiments.synthesis.cross_experiment.build_synthesis_table` from the result dicts of each experiment, and saved to `experiments/output/synthesis_table.csv`. Effect sizes prefer the proper inferential test (GLMM / LMM / prompt-level Mann-Whitney) and fall back to descriptive statistics only if the new fields are absent.
+
 | CCL design choice | Experiment | Key finding (proper inferential test) | Effect size |
 | --- | --- | --- | --- |
-| Claim-type annotation (pre-LLM) | A (FRANK) | Factual detection >> Interpretive (GLMM with summary + model random intercepts) | OR = 5.15, 95% CI [4.66, 5.70] |
-| Claim-type annotation (LLM era) | A' (FELM) | Factual prompt-level error rate higher than interpretive (Mann-Whitney at prompt level) | mean 0.284 vs 0.158, p ≈ 8 × 10⁻⁶ |
-| No-self-merge principle | B | Structural enforcement changes conversation length (LMM with class + student random intercepts) | β = −2.95 turns, p = 0.002, d ≈ −0.27 |
-| Process reflection (Stage 3) | C | Active engagement declines even under scaffolding (per-student slopes, t-test on slopes) | slope = −0.013***, p < 0.001 |
-| Sustained scaffolding | D | Long-term decay analysis (WildChat, months; per-user slopes) | (see Exp D output) |
+| Claim-type annotation (pre-LLM) | A (FRANK) | Factual detection >> Interpretive (GLMM with summary + model random intercepts) | OR = 5.15 [95 % CI 4.66, 5.70] |
+| Claim-type annotation (LLM era) | A' (FELM) | Factual prompt-level error rate > Interpretive (prompt-level Mann-Whitney; segments not independent within prompt) | mean 0.28 vs 0.16, U = 72,798, p ≈ 7.8 × 10⁻⁶ (N = 378 + 333 prompts) |
+| No-self-merge principle (learning outcome) | B | Per-session unassisted exam score (Part3Tot); paper reports b = −0.064 on student-level final exam | b = −0.010 (p = 0.837) |
+| Architectural enforcement (conversation length) | B | Hint-only AI produces longer conversations (LMM with class + student random intercepts) | β(vanilla−aug) = −2.95 turns [95 % CI −4.80, −1.09], p = 0.0018, d_total = −0.27 |
+| Process reflection (Stage 3) | C | Passivity increases across sessions (per-student slopes, one-sample t) | slope = +0.014*** |
+| Sustained scaffolding (fading debate) | D | Long-term engagement decay over months (per-user slopes) | (see Exp D output) |
 
 ### Three Validated Mechanisms (after correcting for nesting)
 
@@ -440,8 +561,8 @@ The WildChat analysis tests whether the decay pattern found in Experiment C pers
 ## Reproducibility
 
 ```bash
-# Install experiment dependencies
-pip install .[experiments]
+# Install (standalone CCL project)
+pip install -e ".[dev]"
 
 # Run all experiments (skip D if no HF token)
 python -m experiments.run_all --skip d
@@ -458,6 +579,18 @@ python -m pytest experiments/tests/ -v
 ```
 
 All results (CSVs + figures) are saved to `experiments/output/`.
+
+### Software stack
+
+| Library | Use |
+| --- | --- |
+| `statsmodels.formula.api.mixedlm` | Linear mixed-effects models (Exp B) |
+| `statsmodels.genmod.bayes_mixed_glm.BinomialBayesMixedGLM` | Binomial GLMM with crossed/nested random intercepts (Exp A) — variational-Bayes fit |
+| `scipy.stats` | Mann-Whitney U, Kruskal-Wallis, Fisher's exact, one-sample t-test, normal CDF |
+| `experiments.shared.stats_utils` | Fleiss' κ, Cohen's d, per-subject OLS slopes, cluster-robust OLS |
+| `pandas` / `numpy` | Data manipulation and aggregation |
+| `matplotlib` / `seaborn` | Figures saved to `experiments/output/figures/` |
+| `httpx` / `datasets` | Dataset acquisition and caching |
 
 ---
 
