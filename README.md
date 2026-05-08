@@ -18,6 +18,15 @@ Five experiments test these predictions:
 
 The full results report (with all tables, figures, and interpretation) lives at [`experiments/output/CCL_Validation_Experiments_Report.md`](experiments/output/CCL_Validation_Experiments_Report.md).
 
+## Key findings
+
+After correcting for the nesting structure of each dataset (see [Statistical methodology](#statistical-methodology)):
+
+- **Claim-type asymmetry — validated (both pre-LLM and LLM-era).** FRANK GLMM odds ratio 5.15 [95 % CI 4.66, 5.70] for majority annotator agreement on FACTUAL vs INTERPRETIVE flags, after summary- and model-level random intercepts. FELM replicates at the prompt level: ChatGPT factual prompts have higher per-prompt error rates than interpretive prompts (mean 0.28 vs 0.16, one-sided Mann-Whitney p ≈ 7.8 × 10⁻⁶, N = 378 + 333 prompts). LLMs make more factual errors, *and* humans detect them more reliably — interpretive claims are the high-stealth category that motivates the differential scaffolding design.
+- **No-self-merge — partially validated (length, not disposition).** After class- and student-level random intercepts, GPT Tutor (hint-only) produces ~3 more turns per conversation than GPT Base (β = −2.95, 95 % CI [−4.80, −1.09], p = 0.0018, d_total ≈ −0.27). Differences in evaluative / active / passive turn rates that looked highly significant under Mann-Whitney collapse into between-student variance once nesting is respected and are reported descriptively. The structural finding therefore supports CCL's emphasis on architecture over exhortation, but only in the form of sustained engagement length.
+- **Engagement decay — validated within sessions, mixed across conditions.** Per-student slopes (one slope per student) over 4 Bastani sessions: passive rate rises significantly under hint-only scaffolding (`aug` slope +0.0145/session, p < 0.001) and active rate declines in both arms (`aug` p < 0.001; `vanilla` p < 0.001). Evaluative rate *increases* in `vanilla` (p = 0.001), consistent with a learning-curve effect as students notice GPT Base's mistakes. WildChat per-user slopes extend the analysis to months — see `experiments/output/exp_d_decay_by_order.csv` and `experiments/output/exp_d_decay_by_weeks.csv` for the most recent sample.
+- **Bastani learning-outcome replication.** Per-session unassisted exam score (Part3Tot) regression returns β = −0.010 (p = 0.84) for GPT Base, diverging from the paper's β = −0.064 (p = 0.016). The published outcome is a single standardised final exam aggregated across sessions; the per-session Part3Tot in the public data file is a closely related but not identical measure.
+
 ## Statistical methodology
 
 Each test operates at the unit of analysis appropriate for its nesting structure:
