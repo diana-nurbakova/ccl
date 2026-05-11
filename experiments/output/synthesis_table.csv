@@ -4,4 +4,4 @@ Claim-type annotation (LLM era),A' (FELM),Factual prompt-level error rate > Inte
 No-self-merge principle (learning outcome),B,Per-session unassisted exam score (Part3Tot); paper reports b = -0.064 on student-level final exam,b = -0.010 (p=0.837)
 Architectural enforcement (conversation length),B,Hint-only AI produces longer conversations (LMM with class + student random intercepts),"beta(vanilla-aug) = -2.95 turns [95% CI -4.80, -1.09], p=0.0018, d_total=-0.27"
 Process reflection (Stage 3),C,Passivity increases across sessions,slope = +0.014***
-Sustained scaffolding (fading debate),D,Long-term engagement decay over months,(pending data)
+Sustained scaffolding (fading debate),D,Long-term engagement decay over months,slope = -0.00033
