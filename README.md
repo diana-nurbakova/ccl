@@ -1,4 +1,4 @@
-# Critical Collaboration Literacy (CCL) — Validation Experiments
+# Critical Collaboration Ladder (CCL) — Validation Experiments
 
 Retroactive validation of the CCL framework against four public empirical datasets. The framework makes three structural predictions about how people interact with AI-generated content:
 
