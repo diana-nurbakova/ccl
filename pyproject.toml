@@ -1,7 +1,7 @@
 [project]
 name = "ccl"
 version = "0.1.0"
-description = "Critical Claim Literacy (CCL) — retroactive validation experiments against public empirical datasets"
+description = "Critical Collaboration Ladder (CCL) — retroactive validation experiments against public empirical datasets"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

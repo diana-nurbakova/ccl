@@ -1,6 +1,6 @@
 # CCL Retroactive Validation: Experiment Report
 
-**Framework**: Critical Claim Literacy (CCL)  
+**Framework**: Critical Collaboration Ladder (CCL)  
 **Purpose**: Validate CCL design choices against independent empirical datasets  
 **Code**: `experiments/` directory; reproducible via `python -m experiments.run_all`
 
