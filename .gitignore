@@ -16,6 +16,11 @@ venv/
 # Cached raw datasets (large; reproducible via experiments.shared.data_acquisition)
 experiments/data/raw/
 
+# Experiment E: full LLM interaction audit log + console (large, ~150 MB, regenerable).
+# The generated-critique stores under exp_e/store/ are kept (releasable per spec §9).
+experiments/output/exp_e/logs/
+experiments/output/exp_e/run_console.log
+
 # Local environment
 .env
 .env.local

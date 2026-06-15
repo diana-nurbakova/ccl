@@ -1,0 +1,102 @@
+{
+  "kappa_criticeval": {
+    "n": 200,
+    "cohens_kappa": 0.14539920393350514,
+    "judge_human_agreement": 0.635,
+    "gold_positive_rate": 0.77,
+    "judge_positive_rate": 0.635
+  },
+  "kappa_mrc": {
+    "n": 270,
+    "cohens_kappa": 0.14199142730452782,
+    "judge_human_agreement": 0.5222222222222223,
+    "gold_positive_rate": 0.6370370370370371,
+    "judge_positive_rate": 0.29259259259259257
+  },
+  "rq1": {
+    "method": "Binomial GLMM (variational Bayes); REs: item, critic, author",
+    "formula": "valid_int ~ is_cross + C(gold_quality)",
+    "n_obs": 3634,
+    "n_items": 150,
+    "n_critics": 5,
+    "beta_is_cross": 0.3115498807291246,
+    "se": 0.04799871769635282,
+    "z": 6.490795914591645,
+    "p_value": 8.538414419945184e-11,
+    "odds_ratio": 1.3655398988508842,
+    "or_ci_low": 1.2429311167327346,
+    "or_ci_high": 1.5002434087058474,
+    "random_effects_sd": {
+      "item": 0.7396706090359445,
+      "critic": 0.6347032338570406,
+      "author": 0.2133151297635058
+    }
+  },
+  "rq2": {
+    "n_sound": 3214,
+    "rates": {
+      "self": {
+        "n": 643,
+        "overcorrection_rate": 0.03421461897356143
+      },
+      "cross": {
+        "n": 2571,
+        "overcorrection_rate": 0.03072734344612991
+      }
+    },
+    "self_minus_cross": 0.0034872755274315166,
+    "mcnemar": {
+      "n_pairs": 643,
+      "self_only": 22,
+      "cross_only": 0,
+      "p_value": 4.76837158203125e-07
+    },
+    "glmm": {
+      "n_obs": 3214,
+      "beta_is_cross": -0.2469127913186204,
+      "se": 0.11663485244974311,
+      "z": -2.1169726383887943,
+      "p_value": 0.034262170037667516,
+      "odds_ratio": 0.7812088187517434
+    }
+  },
+  "helpful_correction": {
+    "n_flawed": 2054,
+    "rates": {
+      "self": {
+        "n": 411,
+        "helpful_rate": 0.537712895377129
+      },
+      "cross": {
+        "n": 1643,
+        "helpful_rate": 0.5818624467437614
+      }
+    }
+  },
+  "rq3": {
+    "method": "Binomial GLMM (variational Bayes); REs: item, critic, author",
+    "formula": "valid_int ~ is_cross",
+    "n_obs": 6750,
+    "n_items": 270,
+    "n_critics": 5,
+    "beta_is_cross": 0.254939657078373,
+    "se": 0.04306934713865951,
+    "z": 5.919283063604566,
+    "p_value": 3.2334803723443883e-09,
+    "odds_ratio": 1.2903837529978501,
+    "or_ci_low": 1.185925801548821,
+    "or_ci_high": 1.4040425023439123,
+    "random_effects_sd": {
+      "item": 0.8405055858513397,
+      "critic": 0.7255827883409212,
+      "author": 0.421408780068512
+    }
+  },
+  "length_control": {
+    "corr_len_validity": 0.0948909492417572,
+    "beta_is_cross_controlling_len": 0.21284005514734294,
+    "p_is_cross_controlling_len": 0.027080554828742085,
+    "beta_len_z": 0.2727927158875141,
+    "p_len_z": 2.2901821643948485e-08
+  }
+}

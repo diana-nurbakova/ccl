@@ -1,0 +1,4 @@
+result,metric,estimate,ci_low,ci_high,p_value,n
+RQ1 validity (general),OR(cross vs self),1.366,1.243,1.5,8.538414419945184e-11,3634
+RQ3 validity (code),OR(cross vs self),1.29,1.186,1.404,3.2334803723443883e-09,6750
+RQ2 overcorrection,self - cross rate diff,0.003,,,4.76837158203125e-07,3214

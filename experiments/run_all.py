@@ -24,9 +24,14 @@ def main() -> None:
     )
     parser.add_argument("--force-download", action="store_true")
     parser.add_argument(
-        "--skip", nargs="*", default=[],
-        choices=["a", "a_felm", "b", "c", "d", "synthesis"],
-        help="Skip specific experiments",
+        "--skip", nargs="*", default=["e"],
+        choices=["a", "a_felm", "b", "c", "d", "e", "synthesis"],
+        help="Skip specific experiments (Experiment E is skipped by default "
+             "because it makes paid API calls; pass --skip without 'e' to run it)",
+    )
+    parser.add_argument(
+        "--e-n-items", type=int, default=None,
+        help="Sample size for Experiment E (default from its config)",
     )
     args = parser.parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -115,6 +120,25 @@ def main() -> None:
         results["d"]["decay_by_weeks"].to_csv(
             args.output_dir / "exp_d_decay_by_weeks.csv", index=False
         )
+
+    # --- Experiment E (Stage 4 self-vs-cross critique) — paid API calls ---
+    if "e" not in args.skip:
+        print("\n" + "=" * 70)
+        from experiments.exp_e_critique import config as e_config
+        from experiments.exp_e_critique.run import (
+            probe_models, run_analysis, run_generation,
+        )
+        probe = probe_models()
+        if probe["judge"] is None or len(probe["pool"]) < 2:
+            print("Experiment E aborted: judge or too few pool models available.")
+        else:
+            n_items = args.e_n_items or e_config.DEFAULT_N_ITEMS
+            st = run_generation(
+                n_items=n_items, max_workers=e_config.MAX_WORKERS,
+                force_download=args.force_download, skip_code=False,
+                pool=probe["pool"], judge_spec=probe["judge"],
+            )
+            results["e"] = run_analysis(st)
 
     # --- Synthesis ---
     if "synthesis" not in args.skip:

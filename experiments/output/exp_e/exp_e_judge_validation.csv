@@ -1,0 +1,5 @@
+judge,dataset,n,agreement,cohens_kappa,pabak,ordinal_rho,gold_pos_rate,judge_pos_rate,passes_0.6
+gpt-oss-120b,CriticEval,200,0.635,0.145,0.27,0.266,0.77,0.635,False
+GPT-4.1,CriticEval,200,0.68,0.226,0.36,0.368,0.77,0.66,False
+gpt-oss-120b,ManualReviewComment,270,0.522,0.142,0.044,,0.637,0.293,False
+GPT-4.1,ManualReviewComment,270,0.585,0.137,0.17,,0.637,0.57,False
