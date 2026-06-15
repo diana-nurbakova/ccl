@@ -8,7 +8,12 @@ judge. Full specification: [`specs/ccl-stage4-critique-experiment-spec.md`](../.
 **Run:** 2026-06-15. N = 150 CriticEval items (stratified by gold quality:
 89 high, 61 low), all 270 ManualReviewComment code diffs. Pool = GPT-4.1-nano,
 DeepSeek-V3-0324, Llama-3.3-70B-Instruct-Turbo, Gemma-3-27B, DeepSeek-R1-0528
-(each authors and critiques). Judge = gpt-oss-120b (outside the pool), with
+(each authors and critiques). **Deviation from spec:** the spec named
+*Gemma-4-31B*; this run used `google/gemma-3-27b-it` because of an
+implementation error (Gemma-3 was substituted on a mistaken assumption that
+Gemma-4 was unavailable, and the availability probe checked only the
+substitute). `google/gemma-4-31B-it` is in fact live on DeepInfra and `config.py`
+now specifies it; the substitution does not affect the conclusions (see Caveats). Judge = gpt-oss-120b (outside the pool), with
 GPT-4.1 as a frontier cross-check. Temperatures: generation 0.2, judging 0.0,
 seed 20260615. 0 API errors across ~28,000 calls. Every interaction logged to
 `exp_e/logs/llm_interactions.jsonl`; every result checkpointed under
@@ -158,6 +163,11 @@ this run satisfy the reviewers' core request to engage with *why Stage 4 is hard
 - The CriticEval feedback_correction dev files graded responses low/high only
   (no medium stratum materialised in the sample), so the overcorrection "sound"
   stratum rests on the high grade plus judge soundness ratings.
+- **Gemma deviation:** the run used `google/gemma-3-27b-it`, not the spec's
+  `Gemma-4-31B` (implementation error; Gemma-4-31B *is* available on DeepInfra and
+  `config.py` is now corrected). The cross<self direction holds within 4 of 5
+  critics and under a frontier judge, and the κ-gate headline is independent of any
+  single pool member, so the conclusions are unaffected.
 - ManualReviewComment is CC-BY-4.0 on Zenodo (more permissive than the spec's
   provisional CC-BY-NC-SA note); derivatives and release are fine with attribution.
 - Single judge per verdict (pointwise validity), so no order-swap was needed;

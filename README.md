@@ -141,12 +141,16 @@ python -m experiments.exp_e_critique.recover --resume   # continue the run
 ```
 
 **Design (spec `specs/ccl-stage4-critique-experiment-spec.md`).** Five models
-(GPT-4.1-nano, DeepSeek-V3, Llama-3.3-70B, Gemma-3-27B, DeepSeek-R1) each author
+(GPT-4.1-nano, DeepSeek-V3, Llama-3.3-70B, Gemma-4-31B, DeepSeek-R1) each author
 and critique, giving a 5×5 matrix; *self* = the diagonal (a model critiquing its
 own output), *cross* = off-diagonal. The self/cross effect is estimated *within
 each critic*, so it is not confounded with critic capability. A judge outside
 the pool (gpt-oss-120b) scores critique validity and is validated against human
 labels (Cohen's κ; the LLM-judge headline is dropped if κ < 0.6).
+
+> The reported 2026-06-15 run substituted `gemma-3-27b-it` for `gemma-4-31B-it`
+> due to an implementation error (`config.py` is now corrected); the conclusions
+> are unaffected — see the report's Gemma deviation note.
 
 ## Tests
 

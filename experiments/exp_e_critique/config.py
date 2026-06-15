@@ -40,7 +40,7 @@ MODEL_POOL: list[ModelSpec] = [
     ModelSpec("gpt41nano", "openai", "gpt-4.1-nano", reasoning=False),
     ModelSpec("deepseekv3", "deepinfra", "deepseek-ai/DeepSeek-V3-0324", reasoning=False),
     ModelSpec("llama70b", "deepinfra", "meta-llama/Llama-3.3-70B-Instruct-Turbo", reasoning=False),
-    ModelSpec("gemma27b", "deepinfra", "google/gemma-3-27b-it", reasoning=False),
+    ModelSpec("gemma31b", "deepinfra", "google/gemma-4-31B-it", reasoning=False),
     ModelSpec("deepseekr1", "deepinfra", "deepseek-ai/DeepSeek-R1-0528", reasoning=True),
 ]
 
@@ -58,7 +58,7 @@ JUDGE = ModelSpec(
 
 # Fallback model strings tried by --probe if the primary is unavailable.
 MODEL_FALLBACKS: dict[str, list[str]] = {
-    "gemma27b": ["google/gemma-3-27b-it", "google/gemma-2-27b-it"],
+    "gemma31b": ["google/gemma-4-31B-it", "google/gemma-4-31B-it-turbo", "google/gemma-3-27b-it"],
     "deepseekv3": ["deepseek-ai/DeepSeek-V3-0324", "deepseek-ai/DeepSeek-V3"],
     "deepseekr1": ["deepseek-ai/DeepSeek-R1-0528", "deepseek-ai/DeepSeek-R1"],
     "llama70b": ["meta-llama/Llama-3.3-70B-Instruct-Turbo", "meta-llama/Meta-Llama-3.1-70B-Instruct"],
