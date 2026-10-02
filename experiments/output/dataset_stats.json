@@ -1,0 +1,253 @@
+{
+  "generated": "2026-10-01T21:49:25+00:00",
+  "frank": {
+    "used_in": [
+      "A"
+    ],
+    "n_sentences": 4942,
+    "n_summaries": 2246,
+    "n_articles": 499,
+    "n_models": 9,
+    "sentences_per_model": {
+      "bert_sum": 860,
+      "bart": 828,
+      "bus": 784,
+      "pgn": 726,
+      "s2s": 717,
+      "PtGen": 266,
+      "BERTS2S": 255,
+      "TConvS2S": 254,
+      "TranS2S": 252
+    },
+    "annotators_per_sentence": 3,
+    "sentences_by_n_annotators_flagging_any_error": {
+      "0": 2280,
+      "3": 1331,
+      "1": 791,
+      "2": 540
+    }
+  },
+  "felm": {
+    "used_in": [
+      "A'"
+    ],
+    "n_prompts": 847,
+    "n_segments": 4426,
+    "n_error_segments": 787,
+    "segment_error_rate": 0.1778,
+    "segments_per_prompt": {
+      "min": 1.0,
+      "median": 4.0,
+      "mean": 5.226,
+      "max": 38.0
+    },
+    "by_domain": {
+      "math": {
+        "n_prompts": 194,
+        "n_segments": 599,
+        "n_error_segments": 125,
+        "segment_error_rate": 0.2087,
+        "ccl_category": "FACTUAL"
+      },
+      "reasoning": {
+        "n_prompts": 208,
+        "n_segments": 1025,
+        "n_error_segments": 146,
+        "segment_error_rate": 0.1424,
+        "ccl_category": "INTERPRETIVE"
+      },
+      "science": {
+        "n_prompts": 125,
+        "n_segments": 684,
+        "n_error_segments": 102,
+        "segment_error_rate": 0.1491,
+        "ccl_category": "INTERPRETIVE"
+      },
+      "wk": {
+        "n_prompts": 184,
+        "n_segments": 532,
+        "n_error_segments": 147,
+        "segment_error_rate": 0.2763,
+        "ccl_category": "FACTUAL"
+      },
+      "writing_rec": {
+        "n_prompts": 136,
+        "n_segments": 1586,
+        "n_error_segments": 267,
+        "segment_error_rate": 0.1683,
+        "ccl_category": "GAP"
+      }
+    }
+  },
+  "bastani": {
+    "used_in": [
+      "B",
+      "C"
+    ],
+    "outcomes": {
+      "n_student_session_rows": 3255,
+      "n_students": 943,
+      "n_classes": 50,
+      "sessions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "students_by_arm": {
+        "augmented": 312,
+        "control": 349,
+        "vanilla": 282
+      }
+    },
+    "conversations": {
+      "n_messages": 64486,
+      "messages_by_role": {
+        "assistant": 28731,
+        "user": 28666,
+        "system": 7089
+      },
+      "n_user_turns": 28666,
+      "n_conversations": 7089,
+      "n_students": 518,
+      "grades": [
+        9,
+        10,
+        11
+      ],
+      "by_arm": {
+        "aug": {
+          "n_messages": 44506,
+          "n_user_turns": 20392,
+          "n_conversations": 3714,
+          "n_students": 277
+        },
+        "vanilla": {
+          "n_messages": 19980,
+          "n_user_turns": 8274,
+          "n_conversations": 3375,
+          "n_students": 241
+        }
+      },
+      "user_turn_types": {
+        "PASSIVE": 27491,
+        "ACTIVE": 665,
+        "EVALUATIVE": 510
+      },
+      "user_turn_types_pct": {
+        "PASSIVE": 95.9,
+        "ACTIVE": 2.3,
+        "EVALUATIVE": 1.8
+      }
+    },
+    "experiment_c_repeat_students": {
+      "min_sessions": 3,
+      "n_students": 451,
+      "by_arm": {
+        "aug": 243,
+        "vanilla": 208
+      }
+    },
+    "arm_labels": {
+      "vanilla": "GPT Base",
+      "aug / augmented": "GPT Tutor"
+    }
+  },
+  "wildchat": {
+    "used_in": [
+      "D"
+    ],
+    "n_messages": 60348,
+    "messages_by_role": {
+      "user": 30174,
+      "assistant": 30174
+    },
+    "n_user_turns": 30174,
+    "n_conversations": 9974,
+    "n_users": 696,
+    "conversations_per_user": {
+      "min": 5.0,
+      "median": 9.0,
+      "mean": 14.345,
+      "max": 256.0
+    },
+    "time_span": {
+      "first": "2023-04-09T00:02:53+00:00",
+      "last": "2023-04-17T09:29:25+00:00",
+      "days": 8.39
+    },
+    "messages_by_model": {
+      "gpt-3.5-turbo-0301": 45818,
+      "gpt-4-0314": 14530
+    },
+    "top_languages_by_message": {
+      "English": 25738,
+      "Chinese": 22216,
+      "Russian": 4912,
+      "Spanish": 1160,
+      "Italian": 1098,
+      "French": 1074,
+      "Portuguese": 780,
+      "Korean": 648,
+      "Turkish": 570,
+      "German": 368
+    }
+  },
+  "criticeval": {
+    "used_in": [
+      "E"
+    ],
+    "n_candidate_items": 993,
+    "items_by_gold_quality": {
+      "low": 360,
+      "med": 335,
+      "high": 298
+    },
+    "items_by_domain": {
+      "code_exec": 123,
+      "qa": 110,
+      "chat": 110,
+      "translate": 110,
+      "summary": 110,
+      "harmlessness": 110,
+      "math_cot": 110,
+      "math_pot": 110,
+      "code_not_exec": 100
+    },
+    "n_human_scored_critiques": 562,
+    "sampled_items": {
+      "n": 150,
+      "by_gold_quality": {
+        "high": 89,
+        "low": 61
+      },
+      "by_domain": {
+        "summary": 20,
+        "code_exec": 19,
+        "qa": 18,
+        "math_pot": 17,
+        "code_not_exec": 17,
+        "harmlessness": 17,
+        "translate": 15,
+        "chat": 15,
+        "math_cot": 12
+      }
+    }
+  },
+  "manual_review_comment": {
+    "used_in": [
+      "E"
+    ],
+    "n_comments": 270,
+    "by_label": {
+      "Valid": 172,
+      "Noisy": 98
+    }
+  },
+  "metacritique": {
+    "used_in": [
+      "E"
+    ],
+    "note": "Used for the critique-quality scoring scheme only; no records are loaded."
+  }
+}
