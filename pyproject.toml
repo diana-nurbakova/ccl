@@ -5,7 +5,10 @@ description = "Critical Collaboration Ladder (CCL) — retroactive validation ex
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "Diana Nurbakova" }]
+authors = [
+    { name = "Diana Nurbakova" },
+    { name = "Liana Ermakova" },
+]
 dependencies = [
     "scipy>=1.10",
     "statsmodels>=0.14",

@@ -174,6 +174,38 @@ The suite covers CCL category mappings, statistical utilities, the regex turn cl
 
 All datasets are downloaded on first run by `experiments.shared.data_acquisition` and cached locally. They are excluded from git via `.gitignore`.
 
+## Citation
+
+If you use this code, data or results, please cite the paper:
+
+> D. Nurbakova and L. Ermakova. Who Reviews the AI? The Critical Collaboration Ladder for Human-AI Symbiosis. In *Proceedings of the IEEE/WIC International Conference on Web Intelligence and Intelligent Agent Technology (WI-IAT)*, 2026.
+
+```bibtex
+@inproceedings{nurbakova2026ccl,
+  title     = {Who Reviews the {AI}? {The} Critical Collaboration Ladder for Human-{AI} Symbiosis},
+  author    = {Nurbakova, Diana and Ermakova, Liana},
+  booktitle = {Proceedings of the IEEE/WIC International Conference on Web Intelligence and Intelligent Agent Technology (WI-IAT)},
+  year      = {2026}
+}
+```
+
+and the repository snapshot:
+
+```bibtex
+@software{nurbakova2026ccl_code,
+  title  = {Critical Collaboration Ladder ({CCL}): Validation Experiments},
+  author = {Nurbakova, Diana and Ermakova, Liana},
+  year   = {2026},
+  doi    = {10.5281/zenodo.23137960},
+  url    = {https://doi.org/10.5281/zenodo.23137960}
+}
+```
+
 ## License
 
-MIT.
+This repository mixes material under different licences; see [`LICENSE.md`](LICENSE.md) for the full terms.
+
+- **Code** (`experiments/`) — MIT.
+- **Documentation, specifications and aggregate results** (`README.md`, `specs/`, `experiments/output/` tables and report) — CC-BY-4.0.
+- **Third-party content** embedded in `experiments/output/exp_e/store/` (CriticEval, ManualReviewComment) — remains under its upstream licence (Apache-2.0 / CC-BY-4.0).
+- **Datasets downloaded at run time** (FRANK, FELM, Bastani et al., WildChat-1M) are not redistributed and stay under their sources' terms.
